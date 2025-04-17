@@ -1,0 +1,60 @@
+{{ define "content" }}
+<div class="mb-8">
+    <h1 class="text-3xl font-bold mb-4">Track Your Job Applications</h1>
+    <p class="text-gray-600 mb-6">Keep track of all your job applications in one place. Add tags, search, and monitor your progress.</p>
+    
+    <div class="flex space-x-4">
+        <a href="/applications/new" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow transition">
+            Add New Application
+        </a>
+        <a href="/applications" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded shadow transition">
+            View All Applications
+        </a>
+    </div>
+</div>
+
+<div class="mb-8">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-bold">Recent Applications</h2>
+        <div class="text-sm">
+            <span class="text-gray-500">Filter by status:</span>
+            <select class="ml-2 border rounded p-1" hx-get="/htmx/applications" hx-target="#recent-applications" hx-trigger="change">
+                <option value="">All</option>
+                <option value="applied">Applied</option>
+                <option value="in_progress">In Progress</option>
+                <option value="accepted">Accepted</option>
+                <option value="rejected">Rejected</option>
+            </select>
+        </div>
+    </div>
+    
+    <div id="recent-applications" class="space-y-4" hx-get="/htmx/applications" hx-trigger="load">
+        <div class="text-center py-8">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+            <p class="mt-2 text-gray-500">Loading applications...</p>
+        </div>
+    </div>
+</div>
+
+<div class="bg-white rounded-lg shadow p-6">
+    <h2 class="text-2xl font-bold mb-4">Quick Stats</h2>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+            <div class="text-3xl font-bold text-blue-600" hx-get="/htmx/stats/total" hx-trigger="load">-</div>
+            <div class="text-sm text-gray-500">Total Applications</div>
+        </div>
+        <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-100">
+            <div class="text-3xl font-bold text-yellow-600" hx-get="/htmx/stats/in-progress" hx-trigger="load">-</div>
+            <div class="text-sm text-gray-500">In Progress</div>
+        </div>
+        <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+            <div class="text-3xl font-bold text-green-600" hx-get="/htmx/stats/accepted" hx-trigger="load">-</div>
+            <div class="text-sm text-gray-500">Accepted</div>
+        </div>
+        <div class="bg-red-50 p-4 rounded-lg border border-red-100">
+            <div class="text-3xl font-bold text-red-600" hx-get="/htmx/stats/rejected" hx-trigger="load">-</div>
+            <div class="text-sm text-gray-500">Rejected</div>
+        </div>
+    </div>
+</div>
+{{ end }}

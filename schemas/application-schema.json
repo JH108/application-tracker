@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Job Application",
+  "description": "A job application entry",
+  "type": "object",
+  "required": ["id", "company", "position", "status", "tags", "createdAt", "updatedAt"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "The unique identifier for the application"
+    },
+    "company": {
+      "type": "string",
+      "description": "The company name"
+    },
+    "position": {
+      "type": "string",
+      "description": "The job position title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description of the job"
+    },
+    "url": {
+      "type": "string",
+      "description": "URL of the job posting",
+      "format": "uri"
+    },
+    "status": {
+      "type": "string",
+      "description": "Current status of the application",
+      "enum": ["applied", "in_progress", "rejected", "accepted"]
+    },
+    "tags": {
+      "type": "array",
+      "description": "Tags associated with this application",
+      "items": {
+        "type": "string"
+      }
+    },
+    "createdAt": {
+      "type": "string",
+      "description": "The date and time when the application was created",
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": "string",
+      "description": "The date and time when the application was last updated",
+      "format": "date-time"
+    }
+  }
+}

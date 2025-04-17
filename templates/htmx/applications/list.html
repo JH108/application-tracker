@@ -1,0 +1,55 @@
+{{ range .Applications }}
+<div class="bg-white rounded-lg shadow p-4 hover:shadow-md transition">
+    <div class="flex justify-between items-start">
+        <div>
+            <h3 class="text-lg font-bold">{{ .Company }}</h3>
+            <p class="text-gray-700">{{ .Position }}</p>
+            <div class="mt-2 flex flex-wrap gap-1">
+                {{ range .Tags }}
+                <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">{{ . }}</span>
+                {{ end }}
+            </div>
+        </div>
+        <div>
+            {{ if eq .Status "applied" }}
+            <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">Applied</span>
+            {{ else if eq .Status "in_progress" }}
+            <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">In Progress</span>
+            {{ else if eq .Status "accepted" }}
+            <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Accepted</span>
+            {{ else if eq .Status "rejected" }}
+            <span class="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">Rejected</span>
+            {{ end }}
+        </div>
+    </div>
+    
+    {{ if .Description }}
+    <p class="mt-2 text-gray-600 text-sm line-clamp-2">{{ .Description }}</p>
+    {{ end }}
+    
+    <div class="mt-4 flex justify-between items-center">
+        <div class="text-xs text-gray-500">
+            Applied: {{ .CreatedAt.Format "Jan 2, 2006" }}
+        </div>
+        <div class="flex space-x-2">
+            <a href="/applications/{{ .ID }}" class="text-blue-600 hover:text-blue-800 text-sm">
+                View Details
+            </a>
+            <button class="text-gray-600 hover:text-gray-800 text-sm"
+                   hx-delete="/api/applications/{{ .ID }}"
+                   hx-confirm="Are you sure you want to delete this application?"
+                   hx-target="closest div.bg-white"
+                   hx-swap="outerHTML">
+                Delete
+            </button>
+        </div>
+    </div>
+</div>
+{{ else }}
+<div class="bg-white rounded-lg shadow p-8 text-center">
+    <p class="text-gray-500">No applications found.</p>
+    <a href="/applications/new" class="mt-4 inline-block text-blue-600 hover:text-blue-800">
+        Add your first application
+    </a>
+</div>
+{{ end }}
