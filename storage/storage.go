@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	dataDir        = "./data"
+	dataDir          = "./data"
 	applicationsFile = "applications.json"
 )
 
@@ -53,11 +53,15 @@ func Initialize() error {
 
 // GetAllApplications returns all applications
 func GetAllApplications() ([]models.Application, error) {
+	fmt.Println("Getting all applications")
 	mutex.RLock()
 	defer mutex.RUnlock()
 
 	filePath := filepath.Join(dataDir, applicationsFile)
 	data, err := os.ReadFile(filePath)
+
+	fmt.Println("Reading applications file:", filePath)
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to read applications file: %w", err)
 	}
@@ -66,6 +70,9 @@ func GetAllApplications() ([]models.Application, error) {
 	if err := json.Unmarshal(data, &applications); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal applications: %w", err)
 	}
+
+	fmt.Println("Loaded applications from file:", filePath)
+	fmt.Println("Loaded applications from JSON:", applications)
 
 	return applications, nil
 }
@@ -88,13 +95,14 @@ func GetApplicationByID(id string) (*models.Application, error) {
 
 // SaveApplication saves an application (creates or updates)
 func SaveApplication(app *models.Application) error {
-	mutex.Lock()
-	defer mutex.Unlock()
+	fmt.Println("Saving application:", app)
 
 	applications, err := GetAllApplications()
 	if err != nil {
 		return err
 	}
+
+	fmt.Println("Saving applications:", applications)
 
 	// Check if application already exists
 	found := false
@@ -118,9 +126,6 @@ func SaveApplication(app *models.Application) error {
 
 // DeleteApplication deletes an application by ID
 func DeleteApplication(id string) error {
-	mutex.Lock()
-	defer mutex.Unlock()
-
 	applications, err := GetAllApplications()
 	if err != nil {
 		return err
@@ -179,8 +184,8 @@ func SearchApplications(query string, tags []string) ([]models.Application, erro
 		if query != "" {
 			query = strings.ToLower(query)
 			if !strings.Contains(strings.ToLower(app.Company), query) &&
-			   !strings.Contains(strings.ToLower(app.Position), query) &&
-			   !strings.Contains(strings.ToLower(app.Description), query) {
+				!strings.Contains(strings.ToLower(app.Position), query) &&
+				!strings.Contains(strings.ToLower(app.Description), query) {
 				continue
 			}
 		}
@@ -196,6 +201,10 @@ func saveApplicationsToFile(applications []models.Application) error {
 	filePath := filepath.Join(dataDir, applicationsFile)
 
 	jsonData, err := json.MarshalIndent(applications, "", "  ")
+
+	fmt.Println("Saving applications to file:", filePath)
+	fmt.Println("Saving applications to JSON:", string(jsonData))
+
 	if err != nil {
 		return fmt.Errorf("failed to marshal applications: %w", err)
 	}

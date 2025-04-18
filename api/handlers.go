@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -113,6 +114,8 @@ func CreateApplicationHandler(w http.ResponseWriter, r *http.Request) {
 		req.Tags,
 	)
 
+	fmt.Println("Creating application:", application)
+
 	// Set status if provided
 	if req.Status != "" {
 		application.UpdateStatus(req.Status)
@@ -198,7 +201,7 @@ func UpdateApplicationHandler(w http.ResponseWriter, r *http.Request) {
 		application.Position = req.Position
 	}
 	application.Description = req.Description // Allow empty description
-	application.URL = req.URL // Allow empty URL
+	application.URL = req.URL                 // Allow empty URL
 	if req.Status != "" {
 		application.Status = req.Status
 	}

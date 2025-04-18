@@ -1,7 +1,39 @@
 # Application Tracker Project Guidelines
 
 This document outlines the coding standards, project structure, and workflow guidelines for the Application Tracker project.
-Make sure to follow the standard Git workflow and commit message conventions to maintain a clean and understandable project history.
+
+## Table of Contents
+
+1. [Project Structure](#project-structure)
+2. [Code Style Guidelines](#code-style-guidelines)
+3. [Naming Conventions](#naming-conventions)
+4. [Git Workflow](#git-workflow)
+5. [Testing Guidelines](#testing-guidelines)
+6. [Documentation Standards](#documentation-standards)
+
+## Project Structure
+
+The Application Tracker project follows this directory structure:
+
+```
+ApplicationTracker/
+├── api/                # API handlers and routes
+├── data/               # Data storage files
+├── models/             # Data models and business logic
+├── schemas/            # JSON schemas for validation
+├── static/             # Static assets (CSS, JS, images)
+│   ├── css/            # CSS files (Tailwind)
+│   ├── js/             # JavaScript files (HTMX)
+│   └── images/         # Image assets
+├── storage/            # Storage implementation
+├── templates/          # HTML templates
+│   ├── layouts/        # Base layout templates
+│   ├── partials/       # Reusable template components
+│   ├── pages/          # Full page templates
+│   └── htmx/           # HTMX partial templates
+├── ui/                 # UI-related Go code
+└── main.go             # Application entry point
+```
 
 ### Component Responsibilities
 
@@ -141,10 +173,18 @@ Examples:
 ### Project Documentation
 
 1. Maintain a comprehensive README with:
-    - Project overview
-    - Setup instructions
-    - Usage examples
-    - Architecture overview
+   - Project overview
+   - Setup instructions
+   - Usage examples
+   - Architecture overview
 2. Document API endpoints with examples
 3. Keep UI implementation plans up-to-date
 4. Document significant design decisions
+
+### Changelog
+
+Maintain a CHANGELOG.md file following the [Keep a Changelog](https://keepachangelog.com/) format to track notable changes between versions.
+
+---
+
+These guidelines are meant to evolve with the project. Suggestions for improvements are welcome through pull requests or issues.

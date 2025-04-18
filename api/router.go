@@ -1,12 +1,12 @@
 package api
 
 import (
+	"ApplicationTracker/storage"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
 	"time"
-
-	"ApplicationTracker/storage"
 )
 
 // Middleware for logging requests
@@ -37,8 +37,9 @@ func corsMiddleware(next http.Handler) http.Handler {
 
 // applicationHandler handles all application-related requests
 func applicationHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Received request:", r.Method, r.URL.Path)
 	// Extract the ID from the path if present
-	path := strings.TrimPrefix(r.URL.Path, "/api/applications")
+	path := strings.TrimPrefix(r.URL.Path, "/applications")
 
 	// Route based on HTTP method and path
 	switch {
@@ -95,9 +96,9 @@ func SetupRouter() http.Handler {
 	mux := http.NewServeMux()
 
 	// Register routes
-	mux.HandleFunc("/api/applications", applicationHandler)
-	mux.HandleFunc("/api/applications/", applicationHandler)
-	mux.HandleFunc("/api/health", healthCheckHandler)
+	mux.HandleFunc("/applications", applicationHandler)
+	mux.HandleFunc("/applications/", applicationHandler)
+	mux.HandleFunc("/health", healthCheckHandler)
 
 	// Add middleware
 	handler := loggingMiddleware(corsMiddleware(mux))

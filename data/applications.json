@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "id": "6dc2c00b-f435-4fea-887a-5eb16a883794",
+    "company": "Test UUID Corp",
+    "position": "Software Engineer",
+    "description": "Testing UUID format",
+    "url": "https://example.com/jobs/uuid",
+    "status": "applied",
+    "tags": [
+      "test",
+      "uuid"
+    ],
+    "createdAt": "2025-04-18T15:15:06.586797-05:00",
+    "updatedAt": "2025-04-18T15:15:06.586797-05:00"
+  }
+]
