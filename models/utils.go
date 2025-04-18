@@ -1,23 +1,19 @@
 package models
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"fmt"
+	"github.com/google/uuid"
 	"time"
 )
 
-// generateID creates a unique ID for an application
+// generateID creates a unique ID for an application using UUID v4
 func generateID() string {
-	// Create a random component
-	randomBytes := make([]byte, 8)
-	_, err := rand.Read(randomBytes)
+	// Generate a UUID v4
+	id, err := uuid.NewRandom()
 	if err != nil {
-		// Fallback to timestamp if random generation fails
+		// Fallback to timestamp if UUID generation fails
 		return fmt.Sprintf("app_%d", time.Now().UnixNano())
 	}
-	
-	// Combine timestamp and random component for uniqueness
-	timestamp := time.Now().UnixNano()
-	return fmt.Sprintf("app_%d_%s", timestamp, hex.EncodeToString(randomBytes))
+
+	return id.String()
 }

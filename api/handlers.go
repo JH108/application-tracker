@@ -198,9 +198,7 @@ func UpdateApplicationHandler(w http.ResponseWriter, r *http.Request) {
 		application.Position = req.Position
 	}
 	application.Description = req.Description // Allow empty description
-	if req.URL != "" {
-		application.URL = req.URL
-	}
+	application.URL = req.URL // Allow empty URL
 	if req.Status != "" {
 		application.Status = req.Status
 	}
