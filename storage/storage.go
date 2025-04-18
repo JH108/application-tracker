@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -21,7 +20,7 @@ const (
 var (
 	// ErrNotFound is returned when an application is not found
 	ErrNotFound = errors.New("application not found")
-	
+
 	// mutex to prevent concurrent file access
 	mutex = &sync.RWMutex{}
 )
@@ -33,7 +32,7 @@ func Initialize() error {
 			return fmt.Errorf("failed to create data directory: %w", err)
 		}
 	}
-	
+
 	// Create applications file if it doesn't exist
 	filePath := filepath.Join(dataDir, applicationsFile)
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
@@ -43,12 +42,12 @@ func Initialize() error {
 		if err != nil {
 			return fmt.Errorf("failed to marshal empty applications: %w", err)
 		}
-		
-		if err := ioutil.WriteFile(filePath, jsonData, 0644); err != nil {
+
+		if err := os.WriteFile(filePath, jsonData, 0644); err != nil {
 			return fmt.Errorf("failed to create applications file: %w", err)
 		}
 	}
-	
+
 	return nil
 }
 
@@ -56,18 +55,18 @@ func Initialize() error {
 func GetAllApplications() ([]models.Application, error) {
 	mutex.RLock()
 	defer mutex.RUnlock()
-	
+
 	filePath := filepath.Join(dataDir, applicationsFile)
-	data, err := ioutil.ReadFile(filePath)
+	data, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read applications file: %w", err)
 	}
-	
+
 	var applications []models.Application
 	if err := json.Unmarshal(data, &applications); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal applications: %w", err)
 	}
-	
+
 	return applications, nil
 }
 
@@ -77,13 +76,13 @@ func GetApplicationByID(id string) (*models.Application, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	for _, app := range applications {
 		if app.ID == id {
 			return &app, nil
 		}
 	}
-	
+
 	return nil, ErrNotFound
 }
 
@@ -91,12 +90,12 @@ func GetApplicationByID(id string) (*models.Application, error) {
 func SaveApplication(app *models.Application) error {
 	mutex.Lock()
 	defer mutex.Unlock()
-	
+
 	applications, err := GetAllApplications()
 	if err != nil {
 		return err
 	}
-	
+
 	// Check if application already exists
 	found := false
 	for i, a := range applications {
@@ -107,12 +106,12 @@ func SaveApplication(app *models.Application) error {
 			break
 		}
 	}
-	
+
 	// Add new application if not found
 	if !found {
 		applications = append(applications, *app)
 	}
-	
+
 	// Save to file
 	return saveApplicationsToFile(applications)
 }
@@ -121,15 +120,15 @@ func SaveApplication(app *models.Application) error {
 func DeleteApplication(id string) error {
 	mutex.Lock()
 	defer mutex.Unlock()
-	
+
 	applications, err := GetAllApplications()
 	if err != nil {
 		return err
 	}
-	
+
 	found := false
 	var updatedApps []models.Application
-	
+
 	for _, app := range applications {
 		if app.ID != id {
 			updatedApps = append(updatedApps, app)
@@ -137,11 +136,11 @@ func DeleteApplication(id string) error {
 			found = true
 		}
 	}
-	
+
 	if !found {
 		return ErrNotFound
 	}
-	
+
 	return saveApplicationsToFile(updatedApps)
 }
 
@@ -151,9 +150,9 @@ func SearchApplications(query string, tags []string) ([]models.Application, erro
 	if err != nil {
 		return nil, err
 	}
-	
+
 	var results []models.Application
-	
+
 	for _, app := range applications {
 		// Check if all specified tags are present
 		if len(tags) > 0 {
@@ -175,7 +174,7 @@ func SearchApplications(query string, tags []string) ([]models.Application, erro
 				continue
 			}
 		}
-		
+
 		// Check if query matches any field
 		if query != "" {
 			query = strings.ToLower(query)
@@ -185,25 +184,25 @@ func SearchApplications(query string, tags []string) ([]models.Application, erro
 				continue
 			}
 		}
-		
+
 		results = append(results, app)
 	}
-	
+
 	return results, nil
 }
 
 // saveApplicationsToFile saves applications to the JSON file
 func saveApplicationsToFile(applications []models.Application) error {
 	filePath := filepath.Join(dataDir, applicationsFile)
-	
+
 	jsonData, err := json.MarshalIndent(applications, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal applications: %w", err)
 	}
-	
-	if err := ioutil.WriteFile(filePath, jsonData, 0644); err != nil {
+
+	if err := os.WriteFile(filePath, jsonData, 0644); err != nil {
 		return fmt.Errorf("failed to write applications file: %w", err)
 	}
-	
+
 	return nil
 }
