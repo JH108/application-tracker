@@ -38,6 +38,25 @@ func renderTemplate(w http.ResponseWriter, tmpl string, data TemplateData) {
 	// Execute template
 	// First set the content template, then execute the base template
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	// Use the tmpl parameter to determine which template to execute
+	// For the form template, we need to execute the form.html template directly
+	if tmpl == "form" {
+		// Look for the form template in the pages/applications directory
+		formTemplate := template.Must(template.ParseFiles(
+			"templates/layouts/base.html",
+			"templates/partials/header.html",
+			"templates/partials/footer.html",
+			"templates/pages/applications/form.html",
+		))
+		err := formTemplate.ExecuteTemplate(w, "base.html", data)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		return
+	}
+
+	// For other templates, execute the base.html template
 	err := templates.ExecuteTemplate(w, "base.html", data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -90,7 +109,7 @@ func ApplicationDetailHandler(w http.ResponseWriter, r *http.Request) {
 
 // NewApplicationHandler handles the new application page
 func NewApplicationHandler(w http.ResponseWriter, r *http.Request) {
-	renderTemplate(w, "content", TemplateData{
+	renderTemplate(w, "form", TemplateData{
 		Title:       "Add New Application",
 		Application: &models.Application{}, // Pass an empty application object
 	})
