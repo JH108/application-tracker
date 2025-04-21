@@ -44,7 +44,7 @@ func GetAllApplicationsHandler(w http.ResponseWriter, r *http.Request) {
 
 // GetApplicationHandler returns a specific application by ID
 func GetApplicationHandler(w http.ResponseWriter, r *http.Request) {
-	id := strings.TrimPrefix(r.URL.Path, "/api/applications/")
+	id := strings.TrimPrefix(r.URL.Path, "/applications/")
 	if id == "" {
 		respondWithError(w, http.StatusBadRequest, "Application ID is required")
 		return
@@ -144,7 +144,7 @@ func CreateApplicationHandler(w http.ResponseWriter, r *http.Request) {
 
 // UpdateApplicationHandler updates an existing application
 func UpdateApplicationHandler(w http.ResponseWriter, r *http.Request) {
-	id := strings.TrimPrefix(r.URL.Path, "/api/applications/")
+	id := strings.TrimPrefix(r.URL.Path, "/applications/")
 	if id == "" {
 		respondWithError(w, http.StatusBadRequest, "Application ID is required")
 		return
@@ -236,7 +236,7 @@ func UpdateApplicationHandler(w http.ResponseWriter, r *http.Request) {
 // UpdateApplicationStatusHandler updates the status of an application
 func UpdateApplicationStatusHandler(w http.ResponseWriter, r *http.Request) {
 	// Extract ID from URL
-	path := strings.TrimPrefix(r.URL.Path, "/api/applications/")
+	path := strings.TrimPrefix(r.URL.Path, "/applications/")
 	parts := strings.Split(path, "/")
 	if len(parts) != 2 || parts[1] != "status" {
 		respondWithError(w, http.StatusBadRequest, "Invalid URL format")
@@ -319,7 +319,7 @@ func UpdateApplicationStatusHandler(w http.ResponseWriter, r *http.Request) {
 
 // DeleteApplicationHandler deletes an application
 func DeleteApplicationHandler(w http.ResponseWriter, r *http.Request) {
-	id := strings.TrimPrefix(r.URL.Path, "/api/applications/")
+	id := strings.TrimPrefix(r.URL.Path, "/applications/")
 	if id == "" {
 		respondWithError(w, http.StatusBadRequest, "Application ID is required")
 		return

@@ -121,12 +121,27 @@ curl "http://localhost:8080/api/applications/search?q=Engineer&tags=remote"
 
 ## Testing
 
+### API Tests
+
 Run the included test script to verify the API functionality:
 
 ```bash
 chmod +x test_api.sh
 ./test_api.sh
 ```
+
+### End-to-End Tests
+
+The project includes a comprehensive suite of end-to-end tests using Playwright. These tests verify that all routes and user flows work as expected.
+
+To run the end-to-end tests:
+
+```bash
+cd tests
+./run-tests.sh
+```
+
+For more details on the end-to-end tests, see the [tests/README.md](tests/README.md) file.
 
 ## Project Structure
 
@@ -142,6 +157,10 @@ chmod +x test_api.sh
   - `htmx/` - HTMX partial templates for dynamic updates
 - `static/` - Static assets (CSS, JS, images)
 - `schemas/` - JSON schemas for data validation
+- `tests/` - End-to-end tests using Playwright
+  - `e2e/` - Test files organized by feature
+  - `playwright.config.js` - Playwright configuration
+  - `run-tests.sh` - Test runner script
 
 ## Technologies Used
 
@@ -150,6 +169,9 @@ chmod +x test_api.sh
   - HTMX for interactive UI without writing JavaScript
   - Tailwind CSS for styling
 - **Storage**: Local JSON files
+- **Testing**:
+  - Playwright for end-to-end testing
+  - Bash scripts for API testing
 
 ## Future Enhancements
 

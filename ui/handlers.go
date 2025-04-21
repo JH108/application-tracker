@@ -54,6 +54,19 @@ func renderTemplate(w http.ResponseWriter, tmpl string, data TemplateData) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 		return
+	} else if tmpl == "detail" {
+		// Look for the detail template in the pages/applications directory
+		detailTemplate := template.Must(template.ParseFiles(
+			"templates/layouts/base.html",
+			"templates/partials/header.html",
+			"templates/partials/footer.html",
+			"templates/pages/applications/detail.html",
+		))
+		err := detailTemplate.ExecuteTemplate(w, "base.html", data)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		return
 	}
 
 	// For other templates, execute the base.html template
