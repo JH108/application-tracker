@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -16,6 +17,7 @@ type Response struct {
 	Success bool        `json:"success"`
 	Message string      `json:"message,omitempty"`
 	Data    interface{} `json:"data,omitempty"`
+	Meta    interface{} `json:"meta,omitempty"`
 }
 
 // ApplicationRequest is the structure for application creation/update requests
@@ -28,17 +30,61 @@ type ApplicationRequest struct {
 	Tags        []string `json:"tags"`
 }
 
-// GetAllApplicationsHandler returns all applications
+// GetAllApplicationsHandler returns all applications with pagination support
 func GetAllApplicationsHandler(w http.ResponseWriter, r *http.Request) {
-	applications, err := storage.GetAllApplications()
+	// Parse pagination parameters
+	pageStr := r.URL.Query().Get("page")
+	pageSizeStr := r.URL.Query().Get("pageSize")
+
+	// Default values
+	page := 1
+	pageSize := 10
+
+	// Parse page number
+	if pageStr != "" {
+		var err error
+		page, err = strconv.Atoi(pageStr)
+		if err != nil || page < 1 {
+			page = 1
+		}
+	}
+
+	// Parse page size
+	if pageSizeStr != "" {
+		var err error
+		pageSize, err = strconv.Atoi(pageSizeStr)
+		if err != nil {
+			pageSize = 10
+		}
+		// Limit page size to valid options
+		if pageSize != 10 && pageSize != 25 && pageSize != 50 {
+			pageSize = 10
+		}
+	}
+
+	// Get paginated applications
+	applications, totalCount, err := storage.GetPaginatedApplications(page, pageSize)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Failed to retrieve applications: "+err.Error())
 		return
 	}
 
+	// Calculate pagination metadata
+	totalPages := (totalCount + pageSize - 1) / pageSize
+	hasNextPage := page < totalPages
+	hasPrevPage := page > 1
+
 	respondWithJSON(w, http.StatusOK, Response{
 		Success: true,
 		Data:    applications,
+		Meta: map[string]interface{}{
+			"page":        page,
+			"pageSize":    pageSize,
+			"totalCount":  totalCount,
+			"totalPages":  totalPages,
+			"hasNextPage": hasNextPage,
+			"hasPrevPage": hasPrevPage,
+		},
 	})
 }
 

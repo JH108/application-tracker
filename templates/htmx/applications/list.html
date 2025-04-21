@@ -1,3 +1,16 @@
+{{ if .Pagination }}
+<!-- Hidden div with pagination data for JavaScript -->
+<div id="pagination-data" 
+     data-current-page="{{ .Pagination.CurrentPage }}"
+     data-page-size="{{ .Pagination.PageSize }}"
+     data-total-pages="{{ .Pagination.TotalPages }}"
+     data-total-count="{{ .Pagination.TotalCount }}"
+     data-has-next-page="{{ .Pagination.HasNextPage }}"
+     data-has-prev-page="{{ .Pagination.HasPrevPage }}"
+     class="hidden">
+</div>
+{{ end }}
+
 {{ range .Applications }}
 <div class="bg-white rounded-lg shadow p-4 hover:shadow-md transition">
     <div class="flex justify-between items-start">
@@ -22,11 +35,11 @@
             {{ end }}
         </div>
     </div>
-    
+
     {{ if .Description }}
     <p class="mt-2 text-gray-600 text-sm line-clamp-2">{{ .Description }}</p>
     {{ end }}
-    
+
     <div class="mt-4 flex justify-between items-center">
         <div class="text-xs text-gray-500">
             Applied: {{ .CreatedAt.Format "Jan 2, 2006" }}

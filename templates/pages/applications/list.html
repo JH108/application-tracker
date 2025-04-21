@@ -81,33 +81,120 @@
     </div>
 </div>
 
-<div class="mt-6 text-center">
-    <button 
-        id="load-more" 
-        class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 hidden"
-        hx-get="/htmx/applications?page=2" 
-        hx-target="#applications-list" 
-        hx-swap="beforeend"
-        hx-trigger="click"
-    >
-        Load More
-    </button>
+<div id="pagination-controls" class="mt-6 flex flex-col items-center space-y-4">
+    <!-- Page Size Selector -->
+    <div class="flex items-center space-x-2">
+        <span class="text-sm text-gray-600">Results per page:</span>
+        <select 
+            id="page-size-selector" 
+            class="border border-gray-300 rounded-md shadow-sm text-gray-700 text-sm px-2 py-1"
+            hx-get="/htmx/applications?page=1" 
+            hx-target="#applications-list"
+            hx-trigger="change"
+            name="pageSize"
+            hx-include="this"
+        >
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+        </select>
+    </div>
+
+    <!-- Pagination Navigation -->
+    <div class="flex items-center space-x-2">
+        <button 
+            id="prev-page" 
+            class="px-3 py-1 border border-gray-300 rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            hx-get="/htmx/applications?page=1" 
+            hx-target="#applications-list"
+            hx-trigger="click"
+            disabled
+        >
+            Previous
+        </button>
+
+        <span id="pagination-info" class="text-sm text-gray-600">
+            Page <span id="current-page">1</span> of <span id="total-pages">1</span>
+        </span>
+
+        <button 
+            id="next-page" 
+            class="px-3 py-1 border border-gray-300 rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            hx-get="/htmx/applications?page=2" 
+            hx-target="#applications-list"
+            hx-trigger="click"
+            disabled
+        >
+            Next
+        </button>
+    </div>
 </div>
 
 <script>
-    // Show/hide load more button based on results
+    // Update pagination controls after loading applications
     document.addEventListener('htmx:afterSwap', function(event) {
         if (event.detail.target.id === 'applications-list') {
-            const hasMore = event.detail.xhr.getResponseHeader('HX-Has-More');
-            const loadMoreBtn = document.getElementById('load-more');
-            
-            if (hasMore === 'true') {
-                loadMoreBtn.classList.remove('hidden');
-                // Update the page number for the next load
-                const currentPage = parseInt(loadMoreBtn.getAttribute('hx-get').split('page=')[1]);
-                loadMoreBtn.setAttribute('hx-get', `/htmx/applications?page=${currentPage + 1}`);
+            // Try to get pagination data from the hidden div first
+            const paginationData = document.getElementById('pagination-data');
+
+            let currentPage, totalPages, pageSize, totalCount, hasNextPage, hasPrevPage;
+
+            if (paginationData) {
+                // Get pagination data from the hidden div
+                currentPage = parseInt(paginationData.dataset.currentPage) || 1;
+                totalPages = parseInt(paginationData.dataset.totalPages) || 1;
+                pageSize = parseInt(paginationData.dataset.pageSize) || 10;
+                totalCount = parseInt(paginationData.dataset.totalCount) || 0;
+                hasNextPage = paginationData.dataset.hasNextPage === 'true';
+                hasPrevPage = paginationData.dataset.hasPrevPage === 'true';
             } else {
-                loadMoreBtn.classList.add('hidden');
+                // Fallback to headers if the div is not present
+                currentPage = parseInt(event.detail.xhr.getResponseHeader('HX-Current-Page')) || 1;
+                totalPages = parseInt(event.detail.xhr.getResponseHeader('HX-Total-Pages')) || 1;
+                pageSize = parseInt(event.detail.xhr.getResponseHeader('HX-Page-Size')) || 10;
+                totalCount = parseInt(event.detail.xhr.getResponseHeader('HX-Total-Count')) || 0;
+                hasNextPage = event.detail.xhr.getResponseHeader('HX-Has-More') === 'true';
+                hasPrevPage = currentPage > 1;
+            }
+
+            // Update page size selector
+            const pageSizeSelector = document.getElementById('page-size-selector');
+            pageSizeSelector.value = pageSize.toString();
+
+            // Update pagination info
+            document.getElementById('current-page').textContent = currentPage.toString();
+            document.getElementById('total-pages').textContent = totalPages.toString();
+
+            // Update previous button
+            const prevButton = document.getElementById('prev-page');
+            prevButton.disabled = !hasPrevPage;
+            prevButton.setAttribute('hx-get', `/htmx/applications?page=${currentPage - 1}&pageSize=${pageSize}`);
+
+            // Update next button
+            const nextButton = document.getElementById('next-page');
+            nextButton.disabled = !hasNextPage;
+            nextButton.setAttribute('hx-get', `/htmx/applications?page=${currentPage + 1}&pageSize=${pageSize}`);
+
+            // Preserve query parameters in pagination links
+            const query = new URLSearchParams(window.location.search);
+            const q = query.get('q') || '';
+            const tags = query.get('tags') || '';
+            const status = query.get('status') || '';
+
+            if (q || tags || status) {
+                const queryParams = [];
+                if (q) queryParams.push(`q=${encodeURIComponent(q)}`);
+                if (tags) queryParams.push(`tags=${encodeURIComponent(tags)}`);
+                if (status) queryParams.push(`status=${encodeURIComponent(status)}`);
+
+                const queryString = queryParams.join('&');
+
+                prevButton.setAttribute('hx-get', 
+                    `/htmx/applications?page=${currentPage - 1}&pageSize=${pageSize}&${queryString}`);
+                nextButton.setAttribute('hx-get', 
+                    `/htmx/applications?page=${currentPage + 1}&pageSize=${pageSize}&${queryString}`);
+                pageSizeSelector.setAttribute('hx-get', 
+                    `/htmx/applications?page=1&${queryString}`);
             }
         }
     });

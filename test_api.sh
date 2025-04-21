@@ -48,6 +48,26 @@ echo -e "\n--- Testing Get All Applications ---"
 get_all_response=$(curl -s $API_URL/applications)
 print_result $? "Retrieved all applications"
 
+# Test pagination
+echo -e "\n--- Testing Pagination ---"
+page_response=$(curl -s "$API_URL/applications?page=1&pageSize=10")
+meta_exists=$(echo $page_response | grep -o '"meta":' | wc -l)
+if [ $meta_exists -eq 1 ]; then
+  print_result 0 "Pagination metadata exists in response"
+else
+  print_result 1 "Pagination metadata not found in response"
+fi
+
+# Test different page sizes
+echo -e "\n--- Testing Different Page Sizes ---"
+page_size_response=$(curl -s "$API_URL/applications?page=1&pageSize=25")
+page_size=$(echo $page_size_response | grep -o '"pageSize":25' | wc -l)
+if [ $page_size -eq 1 ]; then
+  print_result 0 "Page size parameter works correctly"
+else
+  print_result 1 "Page size parameter not working as expected"
+fi
+
 # Get application by ID
 echo -e "\n--- Testing Get Application by ID ---"
 get_response=$(curl -s $API_URL/applications/$app_id)

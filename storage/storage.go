@@ -126,6 +126,37 @@ func GetAllApplications() ([]models.Application, error) {
 	return applications, nil
 }
 
+// GetPaginatedApplications returns a paginated list of applications
+func GetPaginatedApplications(page, pageSize int) ([]models.Application, int, error) {
+	log.Printf("Getting paginated applications: page=%d, pageSize=%d", page, pageSize)
+
+	// Get all applications
+	applications, err := GetAllApplications()
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Calculate total count
+	totalCount := len(applications)
+
+	// Calculate start and end indices
+	startIndex := (page - 1) * pageSize
+	endIndex := startIndex + pageSize
+
+	// Check if startIndex is out of bounds
+	if startIndex >= totalCount {
+		return []models.Application{}, totalCount, nil
+	}
+
+	// Check if endIndex is out of bounds
+	if endIndex > totalCount {
+		endIndex = totalCount
+	}
+
+	// Return the paginated slice
+	return applications[startIndex:endIndex], totalCount, nil
+}
+
 // GetApplicationByID returns an application by ID
 func GetApplicationByID(id string) (*models.Application, error) {
 	log.Printf("Getting application by ID: %s", id)

@@ -154,6 +154,7 @@ func HtmxApplicationsHandler(w http.ResponseWriter, r *http.Request) {
 	tagsParam := r.URL.Query().Get("tags")
 	status := r.URL.Query().Get("status")
 	pageStr := r.URL.Query().Get("page")
+	pageSizeStr := r.URL.Query().Get("pageSize")
 
 	// Parse page number
 	page := 1
@@ -162,6 +163,20 @@ func HtmxApplicationsHandler(w http.ResponseWriter, r *http.Request) {
 		page, err = strconv.Atoi(pageStr)
 		if err != nil || page < 1 {
 			page = 1
+		}
+	}
+
+	// Parse page size
+	pageSize := 10
+	if pageSizeStr != "" {
+		var err error
+		pageSize, err = strconv.Atoi(pageSizeStr)
+		if err != nil {
+			pageSize = 10
+		}
+		// Limit page size to valid options
+		if pageSize != 10 && pageSize != 25 && pageSize != 50 {
+			pageSize = 10
 		}
 	}
 
@@ -192,31 +207,50 @@ func HtmxApplicationsHandler(w http.ResponseWriter, r *http.Request) {
 		applications = filtered
 	}
 
-	// Simple pagination (in a real app, this would be handled by the storage layer)
-	pageSize := 10
+	// Calculate total count for pagination
+	totalCount := len(applications)
+
+	// Pagination
 	startIndex := (page - 1) * pageSize
 	endIndex := startIndex + pageSize
 
-	if startIndex >= len(applications) {
+	if startIndex >= totalCount {
 		applications = []models.Application{}
-	} else if endIndex > len(applications) {
+	} else if endIndex > totalCount {
 		applications = applications[startIndex:]
 	} else {
 		applications = applications[startIndex:endIndex]
 	}
 
+	// Calculate pagination metadata
+	totalPages := (totalCount + pageSize - 1) / pageSize
+	hasNextPage := page < totalPages
+
 	// Set HX-Has-More header if there are more results
-	hasMore := (page * pageSize) < len(applications)
-	if hasMore {
+	if hasNextPage {
 		w.Header().Set("HX-Has-More", "true")
 	} else {
 		w.Header().Set("HX-Has-More", "false")
 	}
 
+	// Set custom headers for pagination metadata
+	w.Header().Set("HX-Current-Page", strconv.Itoa(page))
+	w.Header().Set("HX-Page-Size", strconv.Itoa(pageSize))
+	w.Header().Set("HX-Total-Pages", strconv.Itoa(totalPages))
+	w.Header().Set("HX-Total-Count", strconv.Itoa(totalCount))
+
 	// Render template
 	tmpl := template.Must(template.ParseFiles("templates/htmx/applications/list.html"))
 	err = tmpl.Execute(w, map[string]interface{}{
 		"Applications": applications,
+		"Pagination": map[string]interface{}{
+			"CurrentPage": page,
+			"PageSize":    pageSize,
+			"TotalPages":  totalPages,
+			"TotalCount":  totalCount,
+			"HasNextPage": hasNextPage,
+			"HasPrevPage": page > 1,
+		},
 	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
