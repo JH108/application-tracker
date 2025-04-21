@@ -2,7 +2,7 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -114,7 +114,7 @@ func CreateApplicationHandler(w http.ResponseWriter, r *http.Request) {
 		req.Tags,
 	)
 
-	fmt.Println("Creating application:", application)
+	log.Printf("Creating application: %s - %s", application.Company, application.ID)
 
 	// Set status if provided
 	if req.Status != "" {
@@ -362,8 +362,11 @@ func SearchApplicationsHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// respondWithError sends an error response
+// respondWithError sends an error response and logs the error
 func respondWithError(w http.ResponseWriter, code int, message string) {
+	// Log the error
+	log.Printf("ERROR: %s (Status: %d)", message, code)
+
 	respondWithJSON(w, code, Response{
 		Success: false,
 		Message: message,
@@ -379,6 +382,7 @@ func isHtmxRequest(r *http.Request) bool {
 func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	response, err := json.Marshal(payload)
 	if err != nil {
+		log.Printf("ERROR: Failed to marshal JSON response: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("Failed to marshal JSON response"))
 		return

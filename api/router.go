@@ -2,7 +2,6 @@ package api
 
 import (
 	"ApplicationTracker/storage"
-	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -37,7 +36,7 @@ func corsMiddleware(next http.Handler) http.Handler {
 
 // applicationHandler handles all application-related requests
 func applicationHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Received request:", r.Method, r.URL.Path)
+	log.Printf("Received API request: %s %s", r.Method, r.URL.Path)
 	// Extract the ID from the path if present
 	path := strings.TrimPrefix(r.URL.Path, "/applications")
 
@@ -45,34 +44,42 @@ func applicationHandler(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case r.Method == http.MethodGet && path == "":
 		// GET /api/applications - Get all applications
+		log.Printf("Routing to GetAllApplicationsHandler")
 		GetAllApplicationsHandler(w, r)
 
 	case r.Method == http.MethodGet && path == "/search":
 		// GET /api/applications/search - Search applications
+		log.Printf("Routing to SearchApplicationsHandler")
 		SearchApplicationsHandler(w, r)
 
 	case r.Method == http.MethodGet && path != "":
 		// GET /api/applications/{id} - Get application by ID
+		log.Printf("Routing to GetApplicationHandler with path: %s", path)
 		GetApplicationHandler(w, r)
 
 	case r.Method == http.MethodPost && path == "":
 		// POST /api/applications - Create new application
+		log.Printf("Routing to CreateApplicationHandler")
 		CreateApplicationHandler(w, r)
 
 	case r.Method == http.MethodPut && strings.Contains(path, "/status"):
 		// PUT /api/applications/{id}/status - Update application status
+		log.Printf("Routing to UpdateApplicationStatusHandler with path: %s", path)
 		UpdateApplicationStatusHandler(w, r)
 
 	case r.Method == http.MethodPut && path != "":
 		// PUT /api/applications/{id} - Update application
+		log.Printf("Routing to UpdateApplicationHandler with path: %s", path)
 		UpdateApplicationHandler(w, r)
 
 	case r.Method == http.MethodDelete && path != "":
 		// DELETE /api/applications/{id} - Delete application
+		log.Printf("Routing to DeleteApplicationHandler with path: %s", path)
 		DeleteApplicationHandler(w, r)
 
 	default:
 		// Method not allowed or route not found
+		log.Printf("ERROR: Method not allowed or route not found: %s %s", r.Method, r.URL.Path)
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		w.Write([]byte("Method not allowed or route not found"))
 	}
@@ -80,9 +87,11 @@ func applicationHandler(w http.ResponseWriter, r *http.Request) {
 
 // healthCheckHandler handles health check requests
 func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Health check request received")
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`{"status":"ok"}`))
+	log.Printf("Health check response sent: status OK")
 }
 
 // SetupRouter initializes and returns the HTTP router
