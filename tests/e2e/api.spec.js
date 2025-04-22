@@ -9,14 +9,14 @@ async function createTestApplication(request) {
     url: 'https://example.com/api-test',
     tags: ['api', 'test']
   };
-  
+
   const response = await request.post('/api/applications', {
     data: data,
     headers: {
       'Content-Type': 'application/json'
     }
   });
-  
+
   expect(response.ok()).toBeTruthy();
   const responseData = await response.json();
   return responseData.data;
@@ -26,53 +26,88 @@ test.describe('API Endpoints', () => {
   test.describe('GET Endpoints', () => {
     test('GET /api/health should return status ok', async ({ request }) => {
       const response = await request.get('/api/health');
-      
+
       expect(response.ok()).toBeTruthy();
       const data = await response.json();
       expect(data.status).toBe('ok');
     });
-    
-    test('GET /api/applications should return all applications', async ({ request }) => {
+
+    test('GET /api/applications should return all applications with pagination', async ({ request }) => {
       const response = await request.get('/api/applications');
-      
+
       expect(response.ok()).toBeTruthy();
       const data = await response.json();
       expect(data.success).toBeTruthy();
       expect(Array.isArray(data.data)).toBeTruthy();
+
+      // Check that pagination metadata is present
+      expect(data.meta).toBeDefined();
+      expect(data.meta.page).toBeDefined();
+      expect(data.meta.pageSize).toBeDefined();
+      expect(data.meta.totalCount).toBeDefined();
+      expect(data.meta.totalPages).toBeDefined();
+      expect(data.meta.hasNextPage !== undefined).toBeTruthy();
+      expect(data.meta.hasPrevPage !== undefined).toBeTruthy();
     });
-    
+
+    test('GET /api/applications with pagination parameters should work', async ({ request }) => {
+      // Test with page=2 and pageSize=10
+      const response = await request.get('/api/applications?page=2&pageSize=10');
+
+      expect(response.ok()).toBeTruthy();
+      const data = await response.json();
+      expect(data.success).toBeTruthy();
+      expect(Array.isArray(data.data)).toBeTruthy();
+
+      // Check that pagination metadata is correct
+      expect(data.meta.page).toBe(2);
+      expect(data.meta.pageSize).toBe(10);
+
+      // Test with different page size
+      const response2 = await request.get('/api/applications?page=1&pageSize=25');
+
+      expect(response2.ok()).toBeTruthy();
+      const data2 = await response2.json();
+      expect(data2.success).toBeTruthy();
+      expect(Array.isArray(data2.data)).toBeTruthy();
+
+      // Check that pagination metadata is correct
+      expect(data2.meta.page).toBe(1);
+      expect(data2.meta.pageSize).toBe(25);
+    });
+
     test('GET /api/applications/:id should return a specific application', async ({ request }) => {
       // First create a test application
       const application = await createTestApplication(request);
-      
+
       // Then get it by ID
       const response = await request.get(`/api/applications/${application.id}`);
-      
+
       expect(response.ok()).toBeTruthy();
       const data = await response.json();
       expect(data.success).toBeTruthy();
       expect(data.data.id).toBe(application.id);
       expect(data.data.company).toBe('API Test Company');
     });
-    
+
     test('GET /api/applications/search should filter applications', async ({ request }) => {
       // First create a test application
       await createTestApplication(request);
-      
+
       // Then search for it
       const response = await request.get('/api/applications/search?q=API Test');
-      
+
       expect(response.ok()).toBeTruthy();
       const data = await response.json();
       expect(data.success).toBeTruthy();
       expect(Array.isArray(data.data)).toBeTruthy();
-      
+
       // Check if at least one result contains our test company
       const hasTestCompany = data.data.some(app => app.company === 'API Test Company');
       expect(hasTestCompany).toBeTruthy();
     });
   });
-  
+
   test.describe('POST Endpoints', () => {
     test('POST /api/applications should create a new application', async ({ request }) => {
       const data = {
@@ -82,14 +117,14 @@ test.describe('API Endpoints', () => {
         url: 'https://example.com/post-test',
         tags: ['post', 'test']
       };
-      
+
       const response = await request.post('/api/applications', {
         data: data,
         headers: {
           'Content-Type': 'application/json'
         }
       });
-      
+
       expect(response.ok()).toBeTruthy();
       const responseData = await response.json();
       expect(responseData.success).toBeTruthy();
@@ -97,7 +132,7 @@ test.describe('API Endpoints', () => {
       expect(responseData.data.position).toBe('POST Test Position');
       expect(responseData.data.id).toBeTruthy();
     });
-    
+
     test('POST /api/applications should validate required fields', async ({ request }) => {
       const data = {
         // Missing required fields: company and position
@@ -105,39 +140,39 @@ test.describe('API Endpoints', () => {
         url: 'https://example.com/invalid-test',
         tags: ['invalid', 'test']
       };
-      
+
       const response = await request.post('/api/applications', {
         data: data,
         headers: {
           'Content-Type': 'application/json'
         }
       });
-      
+
       expect(response.ok()).toBeFalsy();
       const responseData = await response.json();
       expect(responseData.success).toBeFalsy();
       expect(responseData.message).toContain('required');
     });
   });
-  
+
   test.describe('PUT Endpoints', () => {
     test('PUT /api/applications/:id should update an application', async ({ request }) => {
       // First create a test application
       const application = await createTestApplication(request);
-      
+
       // Then update it
       const updateData = {
         company: 'Updated Company',
         position: 'Updated Position'
       };
-      
+
       const response = await request.put(`/api/applications/${application.id}`, {
         data: updateData,
         headers: {
           'Content-Type': 'application/json'
         }
       });
-      
+
       expect(response.ok()).toBeTruthy();
       const responseData = await response.json();
       expect(responseData.success).toBeTruthy();
@@ -145,23 +180,23 @@ test.describe('API Endpoints', () => {
       expect(responseData.data.position).toBe('Updated Position');
       expect(responseData.data.id).toBe(application.id);
     });
-    
+
     test('PUT /api/applications/:id/status should update application status', async ({ request }) => {
       // First create a test application
       const application = await createTestApplication(request);
-      
+
       // Then update its status
       const updateData = {
         status: 'in_progress'
       };
-      
+
       const response = await request.put(`/api/applications/${application.id}/status`, {
         data: updateData,
         headers: {
           'Content-Type': 'application/json'
         }
       });
-      
+
       expect(response.ok()).toBeTruthy();
       const responseData = await response.json();
       expect(responseData.success).toBeTruthy();
@@ -169,19 +204,19 @@ test.describe('API Endpoints', () => {
       expect(responseData.data.id).toBe(application.id);
     });
   });
-  
+
   test.describe('DELETE Endpoints', () => {
     test('DELETE /api/applications/:id should delete an application', async ({ request }) => {
       // First create a test application
       const application = await createTestApplication(request);
-      
+
       // Then delete it
       const response = await request.delete(`/api/applications/${application.id}`);
-      
+
       expect(response.ok()).toBeTruthy();
       const responseData = await response.json();
       expect(responseData.success).toBeTruthy();
-      
+
       // Verify it's deleted by trying to get it
       const getResponse = await request.get(`/api/applications/${application.id}`);
       expect(getResponse.status()).toBe(404);
